@@ -13,6 +13,7 @@ interface jwtPayload { id: string; email: string }
 type Variables = {
     jwtPayload?: jwtPayload;
 };
+
 export const blogRouter = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 // the goal here is.. to pass in only the user modified values..
@@ -22,6 +23,7 @@ const removeUndefined = <T extends object>(obj: T): Partial<T> => {
     ) as Partial<T>
 }
 
+// the middleware code:
 blogRouter.use('/*', async (c, next) => {
     try {
         const authHeader = c.req.header('Authorization');
@@ -46,8 +48,6 @@ blogRouter.use('/*', async (c, next) => {
             error: error
         })
     }
-
-
 })
 
 // 1. get all posts
@@ -177,6 +177,10 @@ blogRouter.get('/:id', async (c) => {
 
 blogRouter.put('/:id', async (c) => {
     try {
+        const user = c.get('jwtPayload'); // logged-in user info
+        if (!user) {
+            return c.json({ message: "Unauthorized", success: false }, 401);
+        }
         const blogUpdateSchema = z.object({
             title: z.string().optional(),
             content: z.string().optional()
@@ -198,6 +202,11 @@ blogRouter.put('/:id', async (c) => {
                 message: "blog not found",
                 success: false
             })
+        }
+
+        // Ownership check
+        if (blogFound.authorId !== parseInt(user.id)) {
+            return c.json({ message: "Forbidden: you can only update your own blog", success: false }, 403);
         }
 
         const verifiedData = blogUpdateSchema.parse({
