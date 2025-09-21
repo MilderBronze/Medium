@@ -136,8 +136,43 @@ blogRouter.post('/', async (c) => {
 
 
 // 3. get a specific post
-blogRouter.get('/:id', (c) => {
+blogRouter.get('/:id', async (c) => {
+    const prisma = getPrisma(c.env.DATABASE_URL)
+    try {
 
+        const blogId = Number(c.req.param("id"))
+        const idSchema = z.number().int().positive();
+        const validatedId = idSchema.parse(blogId);
+        const blog = await prisma.blog.findUnique({
+            where: {
+                id: validatedId
+            }
+        })
+        if (!blog) {
+            return c.json({
+                message: "couldn't fetch blog",
+                success: false
+            }, 404)
+        }
+        return c.json({
+            message: "blog retrieval success",
+            success: true,
+            blog
+        }, 200)
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            return c.json({
+                message: "zod validation for id of blog failed",
+                success: false,
+                error: error.errors
+            }, 400)
+        }
+        return c.json({
+            message: "couldn't fetch blog",
+            success: false,
+            error
+        }, 500)
+    }
 })
 
 blogRouter.put('/:id', async (c) => {
