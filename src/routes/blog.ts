@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { verify } from "hono/jwt";
 import { getPrisma } from "..";
 import z, { string } from 'zod'
+import { BlogSchema, BlogUpdateSchema } from "@milderbronze/medium";
 
 type Bindings = {
     DATABASE_URL: string
@@ -99,12 +100,8 @@ blogRouter.post('/', async (c) => {
                 message: "jwtPayload didnt have user email/id"
             }, 404)
         }
-        const blogSchema = z.object({
-            title: z.string(),
-            content: z.string(),
-            authorId: z.number()
-        })
-        const validatedData = blogSchema.parse({
+
+        const validatedData = BlogSchema.parse({
             title: title,
             content: content,
             authorId: parseInt(user.id)
@@ -181,10 +178,6 @@ blogRouter.put('/:id', async (c) => {
         if (!user) {
             return c.json({ message: "Unauthorized", success: false }, 401);
         }
-        const blogUpdateSchema = z.object({
-            title: z.string().optional(),
-            content: z.string().optional()
-        })
 
         const prisma = getPrisma(c.env.DATABASE_URL)
         const { title, content } = await c.req.json();
@@ -209,7 +202,7 @@ blogRouter.put('/:id', async (c) => {
             return c.json({ message: "Forbidden: you can only update your own blog", success: false }, 403);
         }
 
-        const verifiedData = blogUpdateSchema.parse({
+        const verifiedData = BlogUpdateSchema.parse({
             title, content
         })
         const data = removeUndefined(verifiedData)

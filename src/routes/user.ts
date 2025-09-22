@@ -3,6 +3,8 @@ import { getPrisma } from "..";
 import { sha256 } from "hono/utils/crypto";
 import z from 'zod'
 import { sign } from "hono/jwt";
+import { SigninInput, SignupInput } from "@milderbronze/medium";
+
 
 type Bindings = {
     DATABASE_URL: string
@@ -28,10 +30,7 @@ userRouter.post('/signup', async (c) => {
     try {
         // add zod validation here.
         // starting by defining the input type expected:
-        const User = z.object({
-            email: z.string().email(),
-            password: z.string()
-        });
+
 
         // untrusted data...
         // wrapping the incoming input in an object..
@@ -41,7 +40,7 @@ userRouter.post('/signup', async (c) => {
         };
 
         // the parsed result is validated and type safe!
-        const validUser = User.parse(input);
+        const validUser = SignupInput.parse(input);
 
         const userFound = await prisma.user.findFirst({
             where: { email: validUser.email }
@@ -94,11 +93,10 @@ userRouter.post('/signin', async (c) => {
 
     const { email, password } = await c.req.json();
     try {
-        const EmailSchema = z.string().email();
-        const emailData = EmailSchema.parse(email);
+        const signinInput = SigninInput.parse({ email, password });
 
         const userFound = await prisma.user.findFirst({
-            where: { email: emailData }
+            where: { email: signinInput.email }
         });
         if (!userFound) {
             return c.json({
@@ -126,7 +124,7 @@ userRouter.post('/signin', async (c) => {
             token
         })
     } catch (error) {
-        if(error instanceof z.ZodError) {
+        if (error instanceof z.ZodError) {
             return c.json({
                 success: false,
                 message: "input validation failed",
