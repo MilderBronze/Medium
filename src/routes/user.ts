@@ -4,6 +4,7 @@ import { sha256 } from "hono/utils/crypto";
 import z from 'zod'
 import { sign } from "hono/jwt";
 import { SigninInput, SignupInput } from "@milderbronze/medium";
+import { Prisma } from "../generated/prisma";
 
 
 type Bindings = {
@@ -12,6 +13,11 @@ type Bindings = {
 }
 
 const userRouter = new Hono<{ Bindings: Bindings }>();
+
+// Test route to verify user router is working
+userRouter.get('/', (c) => {
+    return c.json({ message: "User routes are working!" })
+})
 
 // auth routes
 // sign up
@@ -51,7 +57,8 @@ userRouter.post('/signup', async (c) => {
             }, 411);
         }
 
-        const hashedPassword = await sha256(password) as string
+        // const hashedPassword = await sha256(password) as string
+        const hashedPassword = password
 
         // updating password in validUser with the hash:
         validUser.password = hashedPassword;
@@ -72,6 +79,10 @@ userRouter.post('/signup', async (c) => {
             user: userCreatedSuccessfully
         })
     } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            console.error("PRISMA CODE:", error.code);
+            console.error("META:", error.meta);
+        }
         if (error instanceof z.ZodError) {
             return c.json({
                 success: false,
@@ -81,6 +92,7 @@ userRouter.post('/signup', async (c) => {
         }
         return c.json({
             error: error,
+            check: 'kyu',
             success: false,
             message: "internal server error"
         }, 500)
@@ -106,7 +118,8 @@ userRouter.post('/signin', async (c) => {
 
         // meaning user exists.
         // verify the password
-        const inputPasswordHash = await sha256(password);
+        // const inputPasswordHash = await sha256(password);
+        const inputPasswordHash = password;
         if (inputPasswordHash !== userFound.password) {
             return c.json({ message: "Invalid credentials!" }, 401);
         }
