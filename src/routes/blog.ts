@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { verify } from "hono/jwt";
-import { getPrisma } from "..";
 import z, { string } from 'zod'
 import { BlogSchema, BlogUpdateSchema } from "@milderbronze/medium";
+import { getPrisma } from "../prismaClientInstance";
 
 type Bindings = {
     DATABASE_URL: string
@@ -20,9 +20,10 @@ export const blogRouter = new Hono<{ Bindings: Bindings; Variables: Variables }>
 // the goal here is.. to pass in only the user modified values..
 const removeUndefined = <T extends object>(obj: T): Partial<T> => {
     return Object.fromEntries(
-        Object.entries(obj).filter(([_, v]) => v !== undefined)
+        Object.entries(obj).filter(([k, v]) => v !== undefined)
     ) as Partial<T>
 }
+// objective is to accept any kind of object as args and remove those key-vals whose val is undefined and all of the entries should be optional as well.
 
 // the middleware code:
 blogRouter.use('/*', async (c, next) => {

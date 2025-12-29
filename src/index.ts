@@ -17,11 +17,4 @@ app.use("/*", cors()); // Apply to all routes
 app.route("/api/v1/user", userRouter);
 app.route("/api/v1/blog", blogRouter);
 
-export const getPrisma = (database_url: string) => {
-  const prisma = new PrismaClient({
-    datasourceUrl: database_url,
-  }).$extends(withAccelerate())
-  return prisma
-}
-
 export default app;

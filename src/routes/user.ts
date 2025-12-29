@@ -1,10 +1,10 @@
 import { Hono } from "hono";
-import { getPrisma } from "..";
 import { sha256 } from "hono/utils/crypto";
 import z from 'zod'
 import { sign } from "hono/jwt";
 import { SigninInput, SignupInput } from "@milderbronze/medium";
 import { Prisma } from "../generated/prisma";
+import { getPrisma } from "../prismaClientInstance";
 
 
 type Bindings = {
