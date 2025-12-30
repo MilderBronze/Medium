@@ -32,7 +32,7 @@ userRouter.post('/signup', async (c) => {
     // else create account
     const prisma = getPrisma(c.env.DATABASE_URL)
 
-    const { email, password } = await c.req.json();
+    const { email, password, name } = await c.req.json();
     try {
         // add zod validation here.
         // starting by defining the input type expected:
@@ -42,15 +42,18 @@ userRouter.post('/signup', async (c) => {
         // wrapping the incoming input in an object..
         const input = {
             email: email,
-            password: password
+            password: password,
+            name: name
         };
 
         // the parsed result is validated and type safe!
         const validUser = SignupInput.parse(input);
+        console.log(validUser, 'validuser')
 
         const userFound = await prisma.user.findFirst({
             where: { email: validUser.email }
         });
+
         if (userFound) {
             return c.json({
                 Message: "User already exists!",
@@ -92,7 +95,6 @@ userRouter.post('/signup', async (c) => {
         }
         return c.json({
             error: error,
-            check: 'kyu',
             success: false,
             message: "internal server error"
         }, 500)
