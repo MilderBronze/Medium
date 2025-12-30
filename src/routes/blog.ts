@@ -38,7 +38,7 @@ blogRouter.use('/*', async (c, next) => {
         const tokenData = await verify(token, c.env.SECRET_KEY);
         // if verify throws, then catch block already handles it..
 
-        // else token is a success..
+        // else token fetching is a success...
         const { id, email } = tokenData;
         c.set('jwtPayload', { id, email });
         await next();
