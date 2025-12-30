@@ -136,6 +136,14 @@ blogRouter.post('/', async (c) => {
 // 3. get a specific post
 blogRouter.get('/:id', async (c) => {
     const prisma = getPrisma(c.env.DATABASE_URL)
+    // checking if valid user or not:
+    const user = c.get('jwtPayload');
+    if (!user) {
+        return c.json({
+            message: "sign in to see blogs",
+            success: false
+        }, 401)
+    }
     try {
 
         const blogId = Number(c.req.param("id"))
