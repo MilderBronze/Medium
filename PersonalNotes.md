@@ -8,7 +8,14 @@ A command-line tool made by Cloudflare to help you develop, test, and deploy Clo
 
 # Cloudflare x Prisma Accelerate:
 
-A service that helps Prisma work faster and more reliably on Cloudflare Workers (and other edge platforms). It acts as a proxy/cache between your Workers and your database, reducing latency and handling connection limits, so your serverless functions can use databases more efficiently.
+A service that helps Prisma work faster and more reliably on Cloudflare Workers (and other edge platforms). It acts as a proxy/cache between your Workers and your database, reducing latency and handling connection limits, so your serverless functions can use databases more efficiently (connection pooling).
+
+> What Prisma Accelerate does:
+- Runs outside Workers
+- Maintains a global connection pool
+- Workers talk via HTTP
+- Zero TCP connections from Workers
+- This is why it works at the edge.
 
 # ORM (Object-Relational Mapper):
 

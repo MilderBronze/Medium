@@ -106,8 +106,11 @@ userRouter.post('/signin', async (c) => {
     const prisma = getPrisma(c.env.DATABASE_URL)
 
     const { email, password } = await c.req.json();
+    const input = {
+        email, password
+    }
     try {
-        const signinInput = SigninInput.parse({ email, password });
+        const signinInput = SigninInput.parse(input);
 
         const userFound = await prisma.user.findFirst({
             where: { email: signinInput.email }
