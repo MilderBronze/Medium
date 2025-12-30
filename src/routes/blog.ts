@@ -3,11 +3,7 @@ import { verify } from "hono/jwt";
 import z, { string } from 'zod'
 import { BlogSchema, BlogUpdateSchema } from "@milderbronze/medium";
 import { getPrisma } from "../prismaClientInstance";
-
-type Bindings = {
-    DATABASE_URL: string
-    SECRET_KEY: string
-}
+import { Bindings } from "./user";
 
 interface jwtPayload { id: string; email: string }
 
